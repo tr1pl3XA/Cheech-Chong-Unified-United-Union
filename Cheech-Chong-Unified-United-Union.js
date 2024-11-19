@@ -27,11 +27,11 @@
     }
 
     function initializeBot() {
-        const BotServer = 'ws://localhost:8080';
+        const testServer = 'ws://localhost:8080';
 
         class GuiPanel {
             constructor() {
-                this.botClient = {
+                this.testClient = {
                     zoomValue: 0,
                     server: null,
                     mousePosition: { x: 0, y: 0 },
@@ -40,7 +40,7 @@
                     decryptionKey: 0
                 };
 
-                this.socket = io.connect(BotServer, { transports: ["websocket"] });
+                this.socket = io.connect(testServer, { transports: ["websocket"] });
                 this.loadSettings();
                 this.botsContainer = null;
                 this.started = false;
@@ -64,15 +64,15 @@
 
                 WebSocket.prototype.send = function(buffer) {
                     originalSend.call(this, buffer);
-                    if (this.url.includes(BotServer)) return;
-                    self.botClient.server = this.url;
+                    if (this.url.includes(testServer)) return;
+                    self.testClient.server = this.url;
                     let msg = new DataView(new Uint8Array(buffer).buffer);
                     switch (msg.getUint8(0)) {
                         case 254:
-                            if (!self.botClient.protocolVersion) self.botClient.protocolVersion = msg.getUint32(1, true);
+                            if (!self.testClient.protocolVersion) self.testClient.protocolVersion = msg.getUint32(1, true);
                             break;
                         case 255:
-                            if (!self.botClient.clientVersion) self.botClient.clientVersion = msg.getUint32(1, true);
+                            if (!self.testClient.clientVersion) self.testClient.clientVersion = msg.getUint32(1, true);
                             break;
                     }
                 };
@@ -88,9 +88,9 @@
             MousePosition() {
                 setInterval(() => {
                     if (window.app && window.app.unitManager && window.app.unitManager.units) {
-                        this.botClient.zoomValue = window.app.stage.scale;
-                        this.botClient.mousePosition.x = window.app.stage.mouseWorldX || app.stage.mouseWorldX;
-                        this.botClient.mousePosition.y = window.app.stage.mouseWorldY || app.stage.mouseWorldY;
+                        this.testClient.zoomValue = window.app.stage.scale;
+                        this.testClient.mousePosition.x = window.app.stage.mouseWorldX || app.stage.mouseWorldX;
+                        this.testClient.mousePosition.y = window.app.stage.mouseWorldY || app.stage.mouseWorldY;
                     }
                 }, 10);
             }
@@ -141,7 +141,7 @@
                 const statusElement = document.createElement("span");
                 statusElement.style.paddingBottom = "7px";
                 statusElement.style.color = "#ffffff";
-                statusElement.innerHTML = "<a id='status'>Offline</a>";
+                statusElement.innerHTML = "<a id='status'>Off</a>";
                 return statusElement;
             }
 
@@ -195,7 +195,7 @@
                 }, 1000);
 
                 button.addEventListener("click", () => {
-                    if (document.getElementById("status").innerHTML !== "Offline") {
+                    if (document.getElementById("status").innerHTML !== "Off") {
                         if (!this.started) {
                             this.startBots();
                         } else {
@@ -215,15 +215,13 @@
 
                 this.socket.on('started', () => {
                     this.started = true;
-                    document.getElementById("status").innerHTML = 'Started';
-                    document.getElementById("status").style.color = "#90EE90";
+                    document.getElementById("status").innerHTML = 'Start';
                     document.getElementById("startStopButton").innerHTML = "Stop";
                 });
 
                 this.socket.on('stopped', () => {
                     this.started = false;
-                    document.getElementById("status").innerHTML = 'Stopped';
-                    document.getElementById("status").style.color = "#e00f00";
+                    document.getElementById("status").innerHTML = 'Stop';
                     document.getElementById("startStopButton").innerHTML = "Start";
                 });
 
@@ -240,16 +238,16 @@
 
             startBots() {
                 this.socket.emit('start', {
-                    ip: this.botClient.server,
-                    protocolVersion: this.botClient.protocolVersion,
-                    clientVersion: this.botClient.clientVersion,
+                    ip: this.testClient.server,
+                    protocolVersion: this.testClient.protocolVersion,
+                    clientVersion: this.testClient.clientVersion,
                     botAmount: this.botAmount
                 });
             }
 
             stopBots() {
                 const startStopButton = document.getElementById("startStopButton");
-                startStopButton.innerHTML = "Stopping...";
+                startStopButton.innerHTML = "Stop...";
                 startStopButton.style.backgroundColor = "#444444";
 
                 this.socket.emit('stop');
@@ -275,11 +273,11 @@
                 const statusElement = document.getElementById("status");
 
                 if (isConnected) {
-                    this.socket.emit('move', this.botClient.mousePosition.x, this.botClient.mousePosition.y);
-                    statusElement.innerHTML = 'Online';
+                    this.socket.emit('move', this.testClient.mousePosition.x, this.testClient.mousePosition.y);
+                    statusElement.innerHTML = 'On';
                 } else {
                     this.started = false;
-                    statusElement.innerHTML = 'Offline';
+                    statusElement.innerHTML = 'Off';
                     document.getElementById("minionCount").innerHTML = '~';
                     document.getElementById("minionSpawned").innerHTML = '~';
                     document.getElementById("aiMode").innerHTML = 'Off';
