@@ -1,14 +1,3 @@
-// ==UserScript==
-// @name            CC&UUU
-// @description     extension
-// @namespace       delta.ogario
-// @author          You
-// @icon            https://deltav4.gitlab.io/ext/assets/favicon.ico
-// @match           *://*/*
-// @run-at          document-start
-// @grant           none
-// ==/UserScript==
-
 (function() {
     'use strict';
 
