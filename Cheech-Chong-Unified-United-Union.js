@@ -13,6 +13,18 @@
 (function() {
     'use strict';
 
+    if (typeof io === 'undefined') {
+        const socketScript = document.createElement('script');
+        socketScript.src = "https://cdn.socket.io/3.1.2/socket.io.min.js";
+        socketScript.onload = function() {
+            initializeBot();
+        };
+        document.head.appendChild(socketScript);
+    } else {
+        initializeBot();
+    }
+
+    function initializeBot() {
     const BotServer = 'ws://localhost:8080';
     class GuiPanel {
         constructor() {
